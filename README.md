@@ -1,1 +1,8 @@
 # Introduction-to-Computer-Vision
+
+## KNN Assignment
+Use K-Nearest Neighbors (KNN) to classify the CIFAR-10 dataset with a train/test split only.  
+Use KNN with a train/validation/test split, using the validation set to select hyperparameters (e.g., the value of k).  
+Perform 5-fold cross-validation.  
+Compute and report the following metrics: accuracy, precision, recall, and F1-score.  
+Plot the 5-fold cross-validation performance as a function of k (e.g., accuracy vs. k; include error bars if possible).  
