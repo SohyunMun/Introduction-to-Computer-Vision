@@ -1,0 +1,115 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+from tensorflow.keras.datasets import cifar10
+
+from sklearn.model_selection import train_test_split, cross_validate
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+# Load CIFAR-10
+(X_train, y_train), (X_test, y_test) = cifar10.load_data()
+y_train = y_train.ravel()
+y_test = y_test.ravel()
+
+# Flatten and normalize
+X_train = X_train.reshape(X_train.shape[0], -1) / 255.0
+X_test = X_test.reshape(X_test.shape[0], -1) / 255.0
+
+# Standardize
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Train/Test Split
+knn = KNeighborsClassifier(n_neighbors=5, metric='manhattan', weights='distance')
+knn.fit(X_train, y_train)
+y_pred = knn.predict(X_test)
+
+print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
+print(f"Precision: {precision_score(y_test, y_pred, average='weighted'):.4f}")
+print(f"Recall: {recall_score(y_test, y_pred, average='weighted'):.4f}")
+print(f"F1-Score: {f1_score(y_test, y_pred, average='weighted'):.4f}")
+
+# Train/Validation/Test Split
+X_temp, X_test2, y_temp, y_test2 = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+X_train2, X_val, y_train2, y_val = train_test_split(X_temp, y_temp, test_size=0.25, random_state=42)
+
+# 5-Fold Cross-Validation
+k_values = [3, 5, 7, 9, 11, 13, 15]
+acc_mean, acc_std = [], []
+prec_mean, prec_std = [], []
+rec_mean, rec_std = [], []
+f1_mean, f1_std = [], []
+
+for k in k_values:
+    scores = cross_validate(
+        KNeighborsClassifier(n_neighbors=k), X_train, y_train, cv=5,
+        scoring=['accuracy', 'precision_weighted', 'recall_weighted', 'f1_weighted']
+    )
+    acc_mean.append(scores['test_accuracy'].mean())
+    acc_std.append(scores['test_accuracy'].std())
+    prec_mean.append(scores['test_precision_weighted'].mean())
+    prec_std.append(scores['test_precision_weighted'].std())
+    rec_mean.append(scores['test_recall_weighted'].mean())
+    rec_std.append(scores['test_recall_weighted'].std())
+    f1_mean.append(scores['test_f1_weighted'].mean())
+    f1_std.append(scores['test_f1_weighted'].std())
+
+for i, k in enumerate(k_values):
+    print(f"\nk={k}: Accuracy={acc_mean[i]:.4f}±{acc_std[i]:.4f}, Precision={prec_mean[i]:.4f}±{prec_std[i]:.4f}, Recall={rec_mean[i]:.4f}±{rec_std[i]:.4f}, F1={f1_mean[i]:.4f}±{f1_std[i]:.4f}")
+
+best_k = 3
+best_acc = 0
+for k in [3, 5, 7, 9, 11]:
+    knn = KNeighborsClassifier(n_neighbors=k)
+    knn.fit(X_train2, y_train2)
+    acc = knn.score(X_val, y_val)
+    if acc > best_acc:
+        best_acc = acc
+        best_k = k
+
+knn = KNeighborsClassifier(n_neighbors=best_k)
+knn.fit(np.vstack([X_train2, X_val]), np.concatenate([y_train2, y_val]))
+y_pred2 = knn.predict(X_test2)
+print(f"Best k: {best_k}")
+print(f"Accuracy: {accuracy_score(y_test2, y_pred2):.4f}")
+print(f"Precision: {precision_score(y_test2, y_pred2, average='weighted'):.4f}")
+print(f"Recall: {recall_score(y_test2, y_pred2, average='weighted'):.4f}")
+print(f"F1-Score: {f1_score(y_test2, y_pred2, average='weighted'):.4f}")
+
+# Plot CV Results
+
+plt.figure(figsize=(12, 8))
+
+plt.subplot(2, 2, 1)
+plt.errorbar(k_values, acc_mean, yerr=acc_std, marker='o')
+plt.xlabel('k')
+plt.ylabel('Accuracy')
+plt.title('Accuracy vs k')
+plt.grid(True, alpha=0.3)
+
+plt.subplot(2, 2, 2)
+plt.errorbar(k_values, prec_mean, yerr=prec_std, marker='o')
+plt.xlabel('k')
+plt.ylabel('Precision')
+plt.title('Precision vs k')
+plt.grid(True, alpha=0.3)
+
+plt.subplot(2, 2, 3)
+plt.errorbar(k_values, rec_mean, yerr=rec_std, marker='o')
+plt.xlabel('k')
+plt.ylabel('Recall')
+plt.title('Recall vs k')
+plt.grid(True, alpha=0.3)
+
+plt.subplot(2, 2, 4)
+plt.errorbar(k_values, f1_mean, yerr=f1_std, marker='o')
+plt.xlabel('k')
+plt.ylabel('F1-Score')
+plt.title('F1-Score vs k')
+plt.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.show()
