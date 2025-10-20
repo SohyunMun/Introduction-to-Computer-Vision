@@ -1,6 +1,6 @@
 # Introduction-to-Computer-Vision
 
-## AI Convergence, 2022113137, Sohyun Mun  
+## 2022113137 Mun, Sohyun (AI Convergence)
 
 ## KNN Assignment
 Use K-Nearest Neighbors (KNN) to classify the CIFAR-10 dataset with a train/test split only.  
