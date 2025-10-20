@@ -1,0 +1,80 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+def normalize_image(image):
+    if image.max() > image.min():
+        normalized = ((image - image.min()) / (image.max() - image.min()) * 255)
+        return normalized.astype(np.uint8)
+    return image.astype(np.uint8)
+
+def sobel(image):
+  grad_x = cv2.Sobel(image, cv2.CV_64F, 1, 0, ksize=3)
+  grad_y = cv2.Sobel(image, cv2.CV_64F, 0, 1, ksize=3)
+
+  grad = np.sqrt(grad_x**2 + grad_y**2)
+
+  return grad, grad_x, grad_y
+
+def prewitt(image):
+  kernel_x = np.array([[-1, 0, 1],
+                        [-1, 0, 1],
+                        [-1, 0, 1]], dtype=np.float32)
+
+  kernel_y = np.array([[-1, -1, -1],
+                        [ 0,  0,  0],
+                        [ 1,  1,  1]], dtype=np.float32)
+
+  grad_x = cv2.filter2D(image, cv2.CV_64F, kernel_x)
+  grad_y = cv2.filter2D(image, cv2.CV_64F, kernel_y)
+
+  grad = np.sqrt(grad_x**2 + grad_y**2)
+
+  return grad, grad_x, grad_y
+
+def roberts(image):
+  kernel_x = np.array([[0, 1],
+                        [-1, 0]])
+
+  kernel_y = np.array([[1, 0],
+                        [0, -1]])
+
+  grad_x = cv2.filter2D(image, cv2.CV_64F, kernel_x)
+  grad_y = cv2.filter2D(image, cv2.CV_64F, kernel_y)
+
+  grad = np.sqrt(grad_x**2 + grad_y**2)
+
+  return grad, grad_x, grad_y
+
+image_path = 'G:/내 드라이브/2025/2025-2/컴퓨터비전입문/과제/'
+image = cv2.imread(os.path.join(image_path, 'image.jpg'), cv2.IMREAD_GRAYSCALE)
+
+sobel_grad, sobel_grad_x, sobel_grad_y = sobel(image)
+prewitt_grad, prewitt_grad_x, prewitt_grad_y = prewitt(image)
+roberts_grad, roberts_grad_x, roberts_grad_y = roberts(image)
+
+plt.figure(figsize=(20, 5))
+
+plt.subplot(1, 4, 1)
+plt.imshow(image, cmap='gray')
+plt.title('Original')
+plt.axis('off')
+
+plt.subplot(1, 4, 2)
+plt.imshow(normalize_image(sobel_grad), cmap='gray')
+plt.title('Sobel')
+plt.axis('off')
+
+plt.subplot(1, 4, 3)
+plt.imshow(normalize_image(prewitt_grad), cmap='gray')
+plt.title('Prewitt')
+plt.axis('off')
+
+plt.subplot(1, 4, 4)
+plt.imshow(normalize_image(roberts_grad), cmap='gray')
+plt.title('Roberts')
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
