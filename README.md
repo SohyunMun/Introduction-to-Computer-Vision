@@ -1,5 +1,7 @@
 # Introduction-to-Computer-Vision
 
+## AI Convergence, 2022113137, Sohyun Mun  
+
 ## KNN Assignment
 Use K-Nearest Neighbors (KNN) to classify the CIFAR-10 dataset with a train/test split only.  
 Use KNN with a train/validation/test split, using the validation set to select hyperparameters (e.g., the value of k).  
