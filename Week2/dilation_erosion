@@ -1,0 +1,87 @@
+import numpy as np
+import cv2
+import os
+import matplotlib.pyplot as plt
+
+image_path = 'G:/내 드라이브/2025/2025-2/컴퓨터비전입문/과제/'
+img01 = cv2.imread(os.path.join(image_path, 'image.jpg'), cv2.IMREAD_GRAYSCALE)
+img02 = cv2.imread(os.path.join(image_path, 'opening.jpg'), cv2.IMREAD_GRAYSCALE)
+img03 = cv2.imread(os.path.join(image_path, 'closing.jpg'), cv2.IMREAD_GRAYSCALE)
+
+# Dilation & Erosion
+kernel1 = np.ones((3,3),np.uint8)
+
+dilation = cv2.dilate(img01, kernel1, iterations = 1)
+erosion = cv2.erode(img01, kernel1, iterations = 1)
+
+plt.figure(figsize=(15, 5))
+
+plt.subplot(1, 3, 1)
+plt.imshow(img01, cmap='gray')
+plt.title('Original')
+plt.axis('off')
+
+plt.subplot(1, 3, 2)
+plt.imshow(dilation, cmap='gray')
+plt.title('Dilation')
+plt.axis('off')
+
+plt.subplot(1, 3, 3)
+plt.imshow(erosion, cmap='gray')
+plt.title('Erosion')
+plt.axis('off')
+
+plt.show()
+
+# Opening & Closing
+kernel2 = np.ones((5, 5), np.uint8)
+
+opening_result01 = cv2.morphologyEx(img02, cv2.MORPH_OPEN, kernel2)
+closing_result01 = cv2.morphologyEx(img03, cv2.MORPH_CLOSE, kernel2)
+
+def opening(img, kernel):
+    eroded = cv2.erode(img, kernel, iterations=1)
+    eroded_dilated = cv2.dilate(eroded, kernel, iterations=1)
+    return eroded_dilated
+
+def closing(img, kernel):
+    dilated = cv2.dilate(img, kernel, iterations=1)
+    dilated_eroded = cv2.erode(dilated, kernel, iterations=1)
+    return dilated_eroded
+
+opening_result02 = opening(img02, kernel2)
+closing_result02 = closing(img03, kernel2)
+
+plt.figure(figsize=(15, 8))
+
+plt.subplot(2, 3, 1)
+plt.imshow(img02, cmap='gray')
+plt.title('Original')
+plt.axis('off')
+
+plt.subplot(2, 3, 2)
+plt.imshow(opening_result01, cmap='gray')
+plt.title('Opening1')
+plt.axis('off')
+
+plt.subplot(2, 3, 3)
+plt.imshow(opening_result02, cmap='gray')
+plt.title('Opening2')
+plt.axis('off')
+
+plt.subplot(2, 3, 4)
+plt.imshow(img03, cmap='gray')
+plt.title('Original')
+plt.axis('off')
+
+plt.subplot(2, 3, 5)
+plt.imshow(closing_result01, cmap='gray')
+plt.title('Closing1')
+plt.axis('off')
+
+plt.subplot(2, 3, 6)
+plt.imshow(closing_result02, cmap='gray')
+plt.title('Closing2')
+plt.axis('off')
+
+plt.show()
